@@ -2,61 +2,67 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "VnetName": {
-            "type": "string",
-            "defaultValue": "VNet-001",
-            "metadata": {
-                "description": "Virtual Network Name"
-            }
+        "virtualMachines_HS_Dev_VM01_name": {
+            "defaultValue": "HS-Dev-VM01",
+            "type": "String"
         },
-        "CostCenterIO": {
-            "type": "string",
-            "defaultValue": "12345",
-            "metadata": {
-                "description": "Cost Center IO number for cross billing"
-            }
+        "disks_HS_Dev_VM01_Disl01_externalid": {
+            "defaultValue": "/subscriptions/2ffc25db-ad7a-47ab-916f-9851136c1654/resourceGroups/HS-Dev-RG/providers/Microsoft.Compute/disks/HS-Dev-VM01-Disl01",
+            "type": "String"
         },
-        "OwnerName": {
-            "type": "string",
-            "defaultValue": "John Smith",
-            "metadata": {
-                "description": "Name of the stakeholder responsible for this resource"
-            }
+        "networkInterfaces_hs_dev_vm01669_externalid": {
+            "defaultValue": "/subscriptions/2ffc25db-ad7a-47ab-916f-9851136c1654/resourceGroups/HS-Dev-RG/providers/Microsoft.Network/networkInterfaces/hs-dev-vm01669",
+            "type": "String"
         }
     },
     "variables": {},
     "resources": [
         {
-            "apiVersion": "2018-10-01",
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('VnetName')]",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "CostCenter": "[parameters('CostCenterIO')]",
-                "Owner": "[parameters('OwnerName')]"
-            },
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('virtualMachines_HS_Dev_VM01_name')]",
+            "location": "westcentralus",
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
+                "hardwareProfile": {
+                    "vmSize": "Standard_D2s_v3"
+                },
+                "additionalCapabilities": {
+                    "hibernationEnabled": false
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_HS_Dev_VM01_name'), '-Disl01')]",
+                        "createOption": "Attach",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[parameters('disks_HS_Dev_VM01_Disl01_externalid')]"
+                        },
+                        "deleteOption": "Detach"
+                    },
+                    "dataDisks": [],
+                    "diskControllerType": "SCSI"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_hs_dev_vm01669_externalid')]",
+                            "properties": {
+                                "deleteOption": "Delete"
+                            }
+                        }
                     ]
                 },
-                "enableVmProtection": false,
-                "enableDdosProtection": false,
-                "subnets": [
-                    {
-                        "name": "subnet001",
-                        "properties": {
-                            "addressPrefix": "10.0.0.0/24"
-                        }
-                    },
-                    {
-                        "name": "subnet002",
-                        "properties": {
-                            "addressPrefix": "10.0.1.0/24"
-                        }
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
                     }
-                ]
+                },
+                "priority": "Spot",
+                "evictionPolicy": "Deallocate",
+                "billingProfile": {
+                    "maxPrice": -1
+                }
             }
         }
     ]
