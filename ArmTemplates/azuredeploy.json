@@ -1,1 +1,69 @@
-{}
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_HS_Dev_VM01_name": {
+            "defaultValue": "HS-Dev-VM01",
+            "type": "String"
+        },
+        "disks_HS_Dev_VM01_Disl01_externalid": {
+            "defaultValue": "/subscriptions/2ffc25db-ad7a-47ab-916f-9851136c1654/resourceGroups/HS-Dev-RG/providers/Microsoft.Compute/disks/HS-Dev-VM01-Disl01",
+            "type": "String"
+        },
+        "networkInterfaces_hs_dev_vm01669_externalid": {
+            "defaultValue": "/subscriptions/2ffc25db-ad7a-47ab-916f-9851136c1654/resourceGroups/HS-Dev-RG/providers/Microsoft.Network/networkInterfaces/hs-dev-vm01669",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('virtualMachines_HS_Dev_VM01_name')]",
+            "location": "westcentralus",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_D2s_v3"
+                },
+                "additionalCapabilities": {
+                    "hibernationEnabled": false
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_HS_Dev_VM01_name'), '-Disl01')]",
+                        "createOption": "Attach",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[parameters('disks_HS_Dev_VM01_Disl01_externalid')]"
+                        },
+                        "deleteOption": "Detach"
+                    },
+                    "dataDisks": [],
+                    "diskControllerType": "SCSI"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_hs_dev_vm01669_externalid')]",
+                            "properties": {
+                                "deleteOption": "Delete"
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                },
+                "priority": "Spot",
+                "evictionPolicy": "Deallocate",
+                "billingProfile": {
+                    "maxPrice": -1
+                }
+            }
+        }
+    ]
+}
